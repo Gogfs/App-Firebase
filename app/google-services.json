@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "519688420649",
+    "project_id": "atividadeavaliativa-389d4",
+    "storage_bucket": "atividadeavaliativa-389d4.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:519688420649:android:1c6f4137618e47eacccb38",
+        "android_client_info": {
+          "package_name": "com.example.atividadeavaliativa"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyAPWfUBWok2mVF_aSpCe1F7wKd1QpgrQNA"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
