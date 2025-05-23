@@ -7,31 +7,27 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.background
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.verticalScroll
+import androidx.compose.foundation.lazy.LazyColumn
+import androidx.compose.foundation.lazy.items
+import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.material3.TextField
-import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
+import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import com.example.atividadeavaliativa.ui.theme.AtividadeAvaliativaTheme
-import com.google.firebase.Firebase
-import com.google.firebase.firestore.firestore
+import com.google.firebase.firestore.FirebaseFirestore
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -54,91 +50,37 @@ fun AppAula() {
     var endereco by remember { mutableStateOf("") }
     var email by remember { mutableStateOf("") }
     var senha by remember { mutableStateOf("") }
+    val db = FirebaseFirestore.getInstance()
+    var resultados by remember { mutableStateOf(listOf<Map<String, Any>>()) }
 
     Column(
-        Modifier
+        modifier = Modifier
             .background(Color.LightGray)
             .fillMaxSize()
+            .padding(16.dp)
     ) {
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
+
+        Column(
+            modifier = Modifier
+                .weight(1f)
+                .verticalScroll(rememberScrollState())
         ) {
             Text("App cadastro", fontFamily = FontFamily.Cursive, fontSize = 30.sp)
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
-            TextField(
-                value = nome,
-                onValueChange = { nome = it},
-                label = { Text("Nome:") }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
-            TextField(
-                value = sobrenome,
-                onValueChange = { sobrenome = it},
-                label = { Text("Sobrenome:") }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
-            TextField(
-                value = endereco,
-                onValueChange = { endereco = it},
-                label = { Text("Endereço:") }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
-            TextField(
-                value = email,
-                onValueChange = { email = it},
-                label = { Text("E-mail:") }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
-            TextField(
-                value = senha,
-                onValueChange = { senha = it},
-                label = { Text("Senha:") }
-            )
-        }
-        Row(
-            Modifier
-                .fillMaxWidth()
-                .padding(20.dp),
-            Arrangement.Center
-        ) {
+            Spacer(modifier = Modifier.padding(8.dp))
+
+            TextField(value = nome, onValueChange = { nome = it }, label = { Text("Nome:") })
+            Spacer(modifier = Modifier.padding(8.dp))
+            TextField(value = sobrenome, onValueChange = { sobrenome = it }, label = { Text("Sobrenome:") })
+            Spacer(modifier = Modifier.padding(8.dp))
+            TextField(value = endereco, onValueChange = { endereco = it }, label = { Text("Endereço:") })
+            Spacer(modifier = Modifier.padding(8.dp))
+            TextField(value = email, onValueChange = { email = it }, label = { Text("E-mail:") })
+            Spacer(modifier = Modifier.padding(8.dp))
+            TextField(value = senha, onValueChange = { senha = it }, label = { Text("Senha:") })
+            Spacer(modifier = Modifier.padding(8.dp))
+
             Button(
                 onClick = {
-                    val db = Firebase.firestore
-
-                    // Create a new user with a first and last name
                     val user = hashMapOf(
                         "nome" to nome,
                         "sobrenome" to sobrenome,
@@ -146,8 +88,6 @@ fun AppAula() {
                         "email" to email,
                         "senha" to senha
                     )
-
-// Add a new document with a generated ID
                     db.collection("users")
                         .add(user)
                         .addOnSuccessListener { documentReference ->
@@ -157,16 +97,59 @@ fun AppAula() {
                             Log.w(TAG, "Error adding document", e)
                         }
 
+                    // Limpa os campos após o cadastro
                     nome = ""
                     sobrenome = ""
                     endereco = ""
                     email = ""
                     senha = ""
+                },
+                modifier = Modifier.padding(vertical = 16.dp),
+                colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
+            ) {
+                Text("Cadastrar", fontSize = 20.sp)
+            }
 
+            Button(
+                onClick = {
+                    db.collection("users")
+                        .get()
+                        .addOnSuccessListener { result ->
+                            val listaResultados = mutableListOf<Map<String, Any>>()
+                            for (document in result) {
+                                listaResultados.add(document.data)
+                            }
+                            resultados = listaResultados
+                        }
+                        .addOnFailureListener { exception ->
+                            Log.w(TAG, "Error getting documents.", exception)
+                        }
                 },
                 colors = ButtonDefaults.buttonColors(containerColor = Color.Gray)
             ) {
-                Text("Cadastrar", fontSize = 25.sp)
+                Text("Consultar", fontSize = 20.sp)
+            }
+        }
+
+        LazyColumn(
+            modifier = Modifier
+                .weight(1f)
+                .padding(top = 16.dp)
+        ) {
+            items(resultados) { user ->
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(8.dp)
+                        .background(Color.White, shape = RoundedCornerShape(8.dp))
+                        .padding(16.dp)
+                ) {
+                    Text("Nome: ${user["nome"]}", fontWeight = FontWeight.Bold)
+                    Text("Sobrenome: ${user["sobrenome"]}")
+                    Text("Endereço: ${user["endereco"]}")
+                    Text("E-mail: ${user["email"]}")
+                    Text("Senha: ${user["senha"]}")
+                }
             }
         }
     }
